@@ -1,5 +1,6 @@
 let express = require('express'),
     app = express(),
+    methodOverride = require('method-override'),
     bodyParser = require('body-parser'),
     mongoose = require('mongoose');
 
@@ -14,6 +15,7 @@ let express = require('express'),
 app.set('view engine','ejs');
 app.use(express.static('public'));
 app.use(bodyParser.urlencoded({extended:true}));
+app.use(methodOverride('_method')); //treat as put or delete whatever is specified
 
 
 //MONGOOSE/MODEL CONFIG
@@ -21,7 +23,7 @@ var blogSchema = new mongoose.Schema({
     title: String,
     image: String,
     body: String,
-    create: {type: Date, default: Date.now}
+    created: {type: Date, default: Date.now}
 });
 var Blog = mongoose.model('Blog', blogSchema);
 
@@ -65,6 +67,41 @@ app.post('/blogs', function(req, res){
         }
     })
 })
+
+//show route
+app.get('/blogs/:id', function(req, res){
+   Blog.findById(req.params.id, function(err, foundBlog){ //look for the id that was passed in after blogs
+       if(err){
+           res.redirect('/blogs'); //just redirect the page for blogs if it doesnt work.
+       } else{
+           res.render('show', {blog: foundBlog}); //take the blog and send its data to show
+       }
+   })
+})
+//edit route
+
+app.get('/blogs/:id/edit', function(req, res){
+    Blog.findById(req.params.id, function(err, foundBlog){ //look for the id that was passed in after blogs
+        if(err){
+            res.redirect('/blogs'); 
+        } else{
+            res.render('edit', {blog: foundBlog}); 
+        }
+    });
+});
+
+//update route
+app.put('/blogs/:id', function(req, res){
+    Blog.findByIdAndUpdate(req.params.id, req.body.blog, function(err, updatedBlog){
+        if(err){
+            res.redirect('/blogs');
+        } else{
+            res.redirect('/blogs/'+ req.params.id);
+        }
+    })
+})
+//destroy route
+
 
 app.listen(3000, function(){
     console.log("The server is running yipeee!");

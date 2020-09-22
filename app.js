@@ -13,6 +13,7 @@ let express = require('express'),
 })
 .then(() =>console.log('Connected to Db!'))
 .catch(error => console.log(error.message));
+mongoose.set("useFindAndModify", false);
 app.set('view engine','ejs');
 app.use(express.static('public'));
 app.use(bodyParser.urlencoded({extended:true}));
